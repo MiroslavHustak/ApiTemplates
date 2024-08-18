@@ -140,7 +140,7 @@ module NewtonsoftJson =
 
     let private postHandlerTask : HttpHandler =   //GIRAFFE
     
-        fun (next : HttpFunc) (ctx : HttpContext)   //GIRAFFE
+        fun (next : HttpFunc) (ctx : HttpContext)   //GIRAFFE 
             ->
             task
                 {
