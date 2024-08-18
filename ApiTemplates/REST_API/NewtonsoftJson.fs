@@ -142,31 +142,31 @@ module NewtonsoftJson =
     
         fun (next : HttpFunc) (ctx : HttpContext)   //GIRAFFE 
             ->
-            task
-                {
-                    use reader = new StreamReader(ctx.Request.Body)
-                    let! body = reader.ReadToEndAsync() 
+             task
+                 {
+                     use reader = new StreamReader(ctx.Request.Body)
+                     let! body = reader.ReadToEndAsync() 
                 
-                    let payload = JsonConvert.DeserializeObject<HelloPayload>(body)
+                     let payload = JsonConvert.DeserializeObject<HelloPayload>(body)
 
-                    (*
-                        // If no response content is needed, set the status code to 204
-                        ctx.Response.StatusCode <- StatusCodes.Status204NoContent
+                     (*
+                         // If no response content is needed, set the status code to 204
+                         ctx.Response.StatusCode <- StatusCodes.Status204NoContent
 
-                        // Return an empty response
-                        return! next ctx                        
-                    *)
+                         // Return an empty response
+                         return! next ctx                        
+                     *)
     
-                    let response = 
-                        {
-                            Message = sprintf "Hello, %s!" payload.Name
-                        }
+                     let response = 
+                         {
+                             Message = sprintf "Hello, %s!" payload.Name
+                         }
     
-                    let responseText = JsonConvert.SerializeObject(response)
-                    ctx.Response.ContentType <- "application/json" 
+                     let responseText = JsonConvert.SerializeObject(response)
+                     ctx.Response.ContentType <- "application/json" 
     
-                    return! text responseText next ctx 
-                }
+                     return! text responseText next ctx 
+                 }
                 
     // ************** PUT *******************
     
