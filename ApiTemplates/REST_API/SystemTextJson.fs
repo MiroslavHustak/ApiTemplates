@@ -1,8 +1,8 @@
 ﻿namespace RestApiSystemTextJson
 
-//Templates -> try-with blocks to be added when used in production
+//Templates -> try-with blocks and Option/Result to be added when used in production
 
-//REST API
+//REST API created with SATURN and GIRAFFE
 //Data format -> JSON
 //Client Library -> FsHttp 
 //(De)Serialization -> System.Text.Json
@@ -29,9 +29,9 @@ module RestApiTextJson =
     
     // Handler for GET request
     // curl -X GET http://localhost:8080/    
-    let private getHandler : HttpHandler =
+    let private getHandler : HttpHandler = //GIRAFFE
 
-        fun (next : HttpFunc) (ctx : HttpContext)
+        fun (next : HttpFunc) (ctx : HttpContext) //GIRAFFE
             ->
              // Create a response object
              let response = 
@@ -41,10 +41,10 @@ module RestApiTextJson =
                  }
             
              // Serialize the response object to JSON
-             let jsonResponse = JsonSerializer.Serialize(response)
+             let responseJson = JsonSerializer.Serialize(response)
              
              ctx.Response.ContentType <- "application/json"
-             text jsonResponse next ctx
+             text responseJson next ctx  //GIRAFFE
 
     
     // ************** POST *******************
@@ -63,9 +63,9 @@ module RestApiTextJson =
 
     // Handler for POST request
     // curl -X POST http://localhost:8080/ -H "Content-Type: application/json" -d "{\"Name\":\"Alice\"}"   
-    let private postHandler : HttpHandler =
+    let private postHandler : HttpHandler =  //GIRAFFE
 
-        fun (next : HttpFunc) (ctx : HttpContext)
+        fun (next : HttpFunc) (ctx : HttpContext)  //GIRAFFE
             ->
              task
                  {
@@ -114,9 +114,10 @@ module RestApiTextJson =
         }
     
     // DataTable to store user data
-    let usersTable = 
+    let private usersTable = 
 
         let dt = new DataTable()
+
         dt.Columns.Add("Id", typeof<int>) |> ignore
         dt.Columns.Add("Name", typeof<string>) |> ignore
         dt.Columns.Add("Email", typeof<string>) |> ignore
@@ -135,71 +136,72 @@ module RestApiTextJson =
         -H "Content-Type: application/json" \
         -d '{"Id":2, "Name":"Robert", "Email":"robert@example.com"}'
     *)
-    let private putHandler : HttpHandler =
-        fun (next : HttpFunc) (ctx : HttpContext)
+    let private putHandler : HttpHandler =  //GIRAFFE
+        fun (next : HttpFunc) (ctx : HttpContext)  //GIRAFFE
             ->
-            task
-                {
-                    use reader = new StreamReader(ctx.Request.Body)
-                    let! body = reader.ReadToEndAsync()
+             task
+                 {
+                     use reader = new StreamReader(ctx.Request.Body)
+                     let! body = reader.ReadToEndAsync()
                 
-                    let options = JsonSerializerOptions(PropertyNameCaseInsensitive = true)
-                    try
-                        let updatedUser = JsonSerializer.Deserialize<UserPayload>(body, options)
+                     let options = JsonSerializerOptions(PropertyNameCaseInsensitive = true)
+                     
+                     try
+                         let updatedUser = JsonSerializer.Deserialize<UserPayload>(body, options)
     
-                        // Find the user by ID and update their details in the DataTable
-                        let userRow = usersTable.Rows.Find(updatedUser.Id) |> Option.ofObj
+                         // Find the user by ID and update their details in the DataTable
+                         let userRow = usersTable.Rows.Find(updatedUser.Id) |> Option.ofObj
     
-                        match userRow with
-                        | Some userRow 
-                            -> 
-                            userRow.["Name"] <- updatedUser.Name
-                            userRow.["Email"] <- updatedUser.Email  
+                         match userRow with
+                         | Some userRow 
+                             -> 
+                              userRow.["Name"] <- updatedUser.Name
+                              userRow.["Email"] <- updatedUser.Email  
 
-                            let response = 
-                                {
-                                    Message = sprintf "User with ID %d updated successfully." updatedUser.Id
-                                    UpdatedDataTableInfo = 
-                                        {
-                                            Id = userRow.["Id"] :?> int
-                                            Name = userRow.["Name"].ToString()
-                                            Email = userRow.["Email"].ToString()
-                                        }
-                                }
+                              let response = 
+                                  {
+                                      Message = sprintf "User with ID %d updated successfully." updatedUser.Id
+                                      UpdatedDataTableInfo = 
+                                          {
+                                               Id = Convert.ToInt32 userRow.["Id"] //throws exception if conversion fails 
+                                               Name = Convert.ToString userRow.["Name"]   //Convert.ToString -> value or string empty // |> Option.ofNullEmpty
+                                               Email = Convert.ToString userRow.["Email"] //Convert.ToString -> value or string empty // |> Option.ofNullEmpty
+                                          }
+                                  }
     
-                            let jsonResponse = JsonSerializer.Serialize(response)
-                            ctx.Response.ContentType <- "application/json"
+                              let jsonResponse = JsonSerializer.Serialize(response)
+                              ctx.Response.ContentType <- "application/json"
 
-                            return! text jsonResponse next ctx
+                              return! text jsonResponse next ctx  //GIRAFFE
 
-                        | None 
-                            ->                         
-                            let response = 
-                                {
-                                    Message = sprintf "User with ID %d not found." updatedUser.Id
-                                    UpdatedDataTableInfo = 
-                                        {
-                                            Id = -1
-                                            Name = String.Empty
-                                            Email = String.Empty
-                                        }
-                                }
+                         | None 
+                             ->                         
+                              let response = 
+                                  {
+                                      Message = sprintf "User with ID %d not found." updatedUser.Id
+                                      UpdatedDataTableInfo = 
+                                          {
+                                              Id = -1
+                                              Name = String.Empty
+                                              Email = String.Empty
+                                          }
+                                  }
     
-                            let jsonResponse = JsonSerializer.Serialize(response)
-                            ctx.Response.ContentType <- "application/json"
-                            ctx.Response.StatusCode <- 404
+                              let jsonResponse = JsonSerializer.Serialize(response)
+                              ctx.Response.ContentType <- "application/json"
+                              ctx.Response.StatusCode <- 404
 
-                            return! text jsonResponse next ctx
+                              return! text jsonResponse next ctx  //GIRAFFE
                     
-                    with
-                    | ex -> 
-                          ctx.Response.StatusCode <- 400
-                          return! text (sprintf "Error: %s" ex.Message) next ctx                
+                     with
+                     | ex -> 
+                           ctx.Response.StatusCode <- 400
+                           return! text (sprintf "Error: %s" ex.Message) next ctx    //GIRAFFE              
                 }
     
 
     // Router configuration
-    let private apiRouter =
+    let private apiRouter = //SATURN
 
         router
             {
@@ -209,7 +211,7 @@ module RestApiTextJson =
             }
 
     // Application setup
-    let private app =
+    let private app = //SATURN
 
         application
             {
@@ -220,6 +222,6 @@ module RestApiTextJson =
                 use_gzip
             }
 
-    let internal runApiTextJson () =
+    let internal runApiTextJson () = //SATURN
         run app
 

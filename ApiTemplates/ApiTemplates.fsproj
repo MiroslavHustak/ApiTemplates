@@ -6,8 +6,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="RPC\SystemTextJson.fs" />
-    <Compile Include="RPC\NewtonsoftJson.fs" />
+    <Compile Include="RPC_API\ThothCoders.fs" />
+    <Compile Include="RPC_API\ThothJson.fs" />
+    <Compile Include="RPC_API\SystemTextJson.fs" />
+    <Compile Include="RPC_API\NewtonsoftJson.fs" />
+    <Compile Include="REST_API\ThothCoders.fs" />
+    <Compile Include="REST_API\ThothJson.fs" />
     <Compile Include="REST_API\SystemTextJson.fs" />
     <Compile Include="REST_API\NewtonsoftJson.fs" />
     <Compile Include="Program.fs" />
@@ -17,6 +21,8 @@
     <PackageReference Include="FsHttp" Version="14.5.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Saturn" Version="0.17.0" />
+    <PackageReference Include="Thoth.Json" Version="10.2.0" />
+    <PackageReference Include="Thoth.Json.Net" Version="12.0.0" />
   </ItemGroup>
 
 </Project>

@@ -1,5 +1,12 @@
 ﻿namespace RpcSystemTextJson
 
+//Templates -> try-with blocks and Option/Result to be added when used in production
+
+//RPC API created with SATURN and GIRAFFE
+//Data format -> JSON
+//Client Library -> FsHttp 
+//(De)Serialization -> System.Text.Json
+
 module RpcFunctions =  
      
     let add (a : int) (b : int) : int =
@@ -25,9 +32,9 @@ module RpcApi =
             result : int
         }
 
-    let private rpcHandler : HttpHandler =
+    let private rpcHandler : HttpHandler =  //GIRAFFE
 
-        fun (next : HttpFunc) (ctx : HttpContext)
+        fun (next : HttpFunc) (ctx : HttpContext)  //GIRAFFE
             ->
              task 
                  {                    
@@ -48,16 +55,16 @@ module RpcApi =
                      let responseJson = JsonSerializer.Serialize(response)
                 
                      ctx.Response.ContentType <- "application/json"
-                     return! text responseJson next ctx
+                     return! text responseJson next ctx  //GIRAFFE
                  }
                     
-    let private apiRouter =
+    let private apiRouter =  //SATURN
         router
             {
                 post "/" rpcHandler
             }
 
-    let private app =
+    let private app =  //SATURN
         application 
             {
                 use_router apiRouter
@@ -67,7 +74,7 @@ module RpcApi =
                 use_gzip
             }
 
-    let internal runRpcHandlerTextJson () =
+    let internal runRpcHandlerTextJson () =  //SATURN
         run app
 
   

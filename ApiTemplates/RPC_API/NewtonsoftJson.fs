@@ -1,5 +1,12 @@
 ﻿namespace RpcNewtonsoftJson
 
+//Templates -> try-with blocks and Option/Result to be added when used in production
+
+//RPC API created with SATURN and GIRAFFE
+//Data format -> JSON
+//Client Library -> FsHttp 
+//(De)Serialization -> Newtonsoft.Json
+
 module RpcFunctions =  
      
     let add (a : int) (b : int) : int =
@@ -25,9 +32,9 @@ module RpcApi =
             result : int
         }
 
-    let private rpcHandler : HttpHandler =
+    let private rpcHandler : HttpHandler =   //GIRAFFE
 
-        fun (next : HttpFunc) (ctx : HttpContext)
+        fun (next : HttpFunc) (ctx : HttpContext)   //GIRAFFE
             ->
              async 
                  {    
@@ -47,17 +54,17 @@ module RpcApi =
                      let responseText = JsonConvert.SerializeObject(response)
                      ctx.Response.ContentType <- "application/json" 
 
-                     return! text responseText next ctx |> Async.AwaitTask
+                     return! text responseText next ctx |> Async.AwaitTask   //GIRAFFE
                  }
              |> Async.StartImmediateAsTask  
                     
-    let private apiRouter =
+    let private apiRouter =   //SATURN
         router
             {
                 post "/" rpcHandler
             }
 
-    let private app =
+    let private app =   //SATURN
         application 
             {
                 use_router apiRouter
@@ -67,7 +74,7 @@ module RpcApi =
                 use_gzip
             }
 
-    let internal runRpcHandlerNewtonsoftJson () =
+    let internal runRpcHandlerNewtonsoftJson () =   //SATURN
         run app
 
   

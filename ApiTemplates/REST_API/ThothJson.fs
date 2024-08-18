@@ -1,54 +1,37 @@
-﻿namespace RestApiNewtonsoftJson
+﻿namespace RestApiThothJson
+
+//Compiler directives
+#if FABLE_COMPILER
+open Thoth.Json
+#else
+open Thoth.Json.Net
+
+#endif
 
 //Templates -> try-with blocks and Option/Result to be added when used in production
 
 //REST API created with SATURN and GIRAFFE
 //Data format -> JSON
 //Client Library -> FsHttp 
-//(De)Serialization -> Newtonsoft.Json
+//(De)Serialization -> Thoth.Json
 
-(*
-HTTP Methods: REST APIs use standard HTTP methods (GET, POST, PUT, DELETE, etc.) to interact with resources:
+[<Struct>]
+type internal PyramidOfDoom = PyramidOfDoom with    
+    member _.Bind((optionExpr, err), nextFunc) =
+        match optionExpr with
+        | Some value -> nextFunc value 
+        | _          -> err  
+    member _.Return x : 'a = x   
+    member _.ReturnFrom x : 'a = x 
+    member _.TryFinally(body, compensation) =
+        try body()
+        finally compensation()
+    member _.Zero () = ()
+    member _.Using(resource, binder) =
+        use r = resource
+        binder r
 
-GET to retrieve data.
-POST to create new resources.
-PUT to update existing resources.
-DELETE to remove resources.
-*)
-
-(*    
-Run Your F# API:
-    
-Execute the code to start the web server. It will be bound to 0.0.0.0:8080, making it accessible locally and over the network if your firewall settings allow it.
-Testing:    
-Local Testing: Open a web browser or an API client and navigate to http://localhost:8080 to test your API endpoints.
-Network Testing: If testing from another device on the same network, use the IP address of the machine running the API, like http://192.168.1.100:8080.
-*)
-
-(*
-Web API Configuration: Keep http://0.0.0.0:8080 in RestApi3.runApi() so the server listens on all network interfaces.
-Client Requests: Use http://localhost:8080 or http://127.0.0.1:8080 in your client application to make requests to the server.
-*)
-
-module NewtonsoftJson =
-
-    (*
-    GET Endpoint:
-    
-    URL: /
-    Method: GET
-    Handler: getHandler
-    Description: This endpoint responds to HTTP GET requests by returning a JSON object with a greeting message and a timestamp.
-
-    *****************************************************************************************************
-
-    POST Endpoint:
-
-    URL: /
-    Method: POST
-    Handler: postHandler
-    Description: This endpoint responds to HTTP POST requests by accepting a JSON payload with a name field, deserializing it, and returning a greeting message with the provided name.
-    *)
+module ThothJson =
 
     open System
     open System.IO
@@ -56,51 +39,30 @@ module NewtonsoftJson =
     
     open Saturn
     open Giraffe
-    open Newtonsoft.Json  
     open Microsoft.AspNetCore.Http    
+
+    open ThothCoders
     
     // ************** GET *******************
-        
-    // Define the response type for GET request    
-    type HelloResponseGet = 
-        {
-            Message : string
-            Timestamp : string
-        }
-
-    // Handler for GET request
+           
     // curl -X GET http://localhost:8080/    
     let private getHandler : HttpHandler =
 
         fun (next : HttpFunc) (ctx : HttpContext)
             ->
-             // Create a response object
              let response = 
                  {
                      Message = "Hello, World!"
                      Timestamp = System.DateTime.UtcNow.ToString("o") // ISO 8601 format
                  }
-            
-             // Serialize the response object to JSON
-             let responseJson = JsonConvert.SerializeObject(response)
 
+             let responseJson = Encode.toString 2 (encoderGet response) //2 = the number of spaces used for indentation in the JSON structure  
+                        
              ctx.Response.ContentType <- "application/json"
              text responseJson next ctx
     
     
-    // ************** POST *******************
-
-    // Payload type 
-    type HelloPayload =
-        {
-            Name: string
-        }
-
-    // Response type for POST request 
-    type HelloResponsePost = 
-        {
-            Message: string
-        }  
+    // ************** POST *******************    
 
     // Handlers for POST request
     // curl -X POST http://localhost:8080/ -H "Content-Type: application/json" -d "{\"Name\":\"Alice\"}"   
@@ -115,8 +77,11 @@ module NewtonsoftJson =
                      use reader = new StreamReader(ctx.Request.Body)
                      let! body = reader.ReadToEndAsync() |> Async.AwaitTask
             
-                     // Deserialize using Newtonsoft.Json
-                     let payload = JsonConvert.DeserializeObject<HelloPayload>(body)
+                     let payload = //body serialised by FsHttp
+                        Decode.fromString decoderPost body  
+                        |> function
+                            | Ok value -> value
+                            | Error err  -> { Name = err } //To replace with default values in production   
 
                      (*
                          // If no response content is needed, set the status code to 204
@@ -131,7 +96,7 @@ module NewtonsoftJson =
                              Message = sprintf "Hello, %s!" payload.Name
                         }
 
-                     let responseText = JsonConvert.SerializeObject(response)
+                     let responseText = Encode.toString 2 (encoderPost response)
                      ctx.Response.ContentType <- "application/json" 
 
                      return! text responseText next ctx |> Async.AwaitTask //type HttpFuncResult = Task<HttpContext option>  //GIRAFFE
@@ -147,7 +112,11 @@ module NewtonsoftJson =
                     use reader = new StreamReader(ctx.Request.Body)
                     let! body = reader.ReadToEndAsync() 
                 
-                    let payload = JsonConvert.DeserializeObject<HelloPayload>(body)
+                    let payload = //body serialised by FsHttp
+                        Decode.fromString decoderPost body  
+                        |> function
+                            | Ok value -> value
+                            | Error err  -> { Name = String.Empty } //To replace with default values in production
 
                     (*
                         // If no response content is needed, set the status code to 204
@@ -162,29 +131,14 @@ module NewtonsoftJson =
                             Message = sprintf "Hello, %s!" payload.Name
                         }
     
-                    let responseText = JsonConvert.SerializeObject(response)
+                    let responseText = Encode.toString 2 (encoderPost response)
                     ctx.Response.ContentType <- "application/json" 
     
                     return! text responseText next ctx 
                 }
                 
     // ************** PUT *******************
-    
-    // Payload type
-    type UserPayload =
-        {
-            Id : int
-            Name : string
-            Email : string
-        }
-    
-    // Response type
-    type UserResponsePut = 
-        {
-            Message: string
-            UpdatedDataTableInfo: UserPayload
-        }
-    
+            
     // DataTable to store user data
     let private usersTable = 
 
@@ -218,7 +172,25 @@ module NewtonsoftJson =
                      let! body = reader.ReadToEndAsync() 
                 
                      try
-                         let updatedUser = JsonConvert.DeserializeObject<UserPayload>(body)
+                         let updatedUser =  //body serialised by FsHttp
+                             Decode.fromString decoderPut body  
+                             |> function
+                                 | Ok value ->
+                                             value
+                                 | Error err  ->                                         
+                                             PyramidOfDoom
+                                                 {
+                                                     let! value = usersTable.Rows |> Option.ofObj, { Id = -1; Name = String.Empty; Email = String.Empty }
+                                                     // Retrieve the first row as a fallback
+                                                     let! row = value |> Seq.cast<DataRow> |> Seq.tryHead, { Id = -1; Name = String.Empty; Email = String.Empty }
+
+                                                     return
+                                                         { 
+                                                             Id = Convert.ToInt32 row.["Id"] //throws exception if conversion fails 
+                                                             Name = Convert.ToString row.["Name"]   //Convert.ToString -> value or string empty // |> Option.ofNullEmpty
+                                                             Email = err//Convert.ToString row.["Email"] //Convert.ToString -> value or string empty // |> Option.ofNullEmptyy
+                                                         }
+                                                 }
     
                          // Find the user by ID and update their details in the DataTable
                          let userRow = usersTable.Rows.Find(updatedUser.Id) |> Option.ofObj
@@ -240,7 +212,7 @@ module NewtonsoftJson =
                                           }
                                   }
     
-                              let responseText = JsonConvert.SerializeObject(response)
+                              let responseText = Encode.toString 2 (encoderPut response)
                               ctx.Response.ContentType <- "application/json" 
     
                               return! text responseText next ctx    //GIRAFFE
@@ -258,7 +230,7 @@ module NewtonsoftJson =
                                           }
                                   }
     
-                              let responseText = JsonConvert.SerializeObject(response)
+                              let responseText = Encode.toString 2 (encoderPut response)
                               ctx.Response.ContentType <- "application/json"
                               ctx.Response.StatusCode <- 404
 
@@ -293,5 +265,6 @@ module NewtonsoftJson =
                 use_gzip
             }
 
-    let internal runApiNewtonsoftJson () =  //SATURN
+    let internal runApiThothJson () =  //SATURN
         run app
+
