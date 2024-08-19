@@ -59,8 +59,7 @@ module ThothJson =
              let responseJson = Encode.toString 2 (encoderGet response) //2 = the number of spaces used for indentation in the JSON structure  
                         
              ctx.Response.ContentType <- "application/json"
-             text responseJson next ctx
-    
+             text responseJson next ctx    
     
     // ************** POST *******************    
 

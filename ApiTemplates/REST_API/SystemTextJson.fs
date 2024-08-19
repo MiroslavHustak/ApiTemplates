@@ -45,7 +45,6 @@ module RestApiTextJson =
              
              ctx.Response.ContentType <- "application/json"
              text responseJson next ctx  //GIRAFFE
-
     
     // ************** POST *******************
 
@@ -197,8 +196,7 @@ module RestApiTextJson =
                      | ex -> 
                            ctx.Response.StatusCode <- 400
                            return! text (sprintf "Error: %s" ex.Message) next ctx    //GIRAFFE              
-                }
-    
+                }    
 
     // Router configuration
     let private apiRouter = //SATURN

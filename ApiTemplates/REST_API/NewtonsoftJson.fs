@@ -85,8 +85,7 @@ module NewtonsoftJson =
              let responseJson = JsonConvert.SerializeObject(response)
 
              ctx.Response.ContentType <- "application/json"
-             text responseJson next ctx
-    
+             text responseJson next ctx    
     
     // ************** POST *******************
 
