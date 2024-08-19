@@ -7,13 +7,13 @@
 
   <ItemGroup>
     <Compile Include="RPC_API\ThothCoders.fs" />
-    <Compile Include="RPC_API\ThothJson.fs" />
-    <Compile Include="RPC_API\SystemTextJson.fs" />
-    <Compile Include="RPC_API\NewtonsoftJson.fs" />
+    <Compile Include="RPC_API\UsingThothJson.fs" />
+    <Compile Include="RPC_API\UsingSystemTextJson.fs" />
+    <Compile Include="RPC_API\UsingNewtonsoftJson.fs" />
     <Compile Include="REST_API\ThothCoders.fs" />
-    <Compile Include="REST_API\ThothJson.fs" />
-    <Compile Include="REST_API\SystemTextJson.fs" />
-    <Compile Include="REST_API\NewtonsoftJson.fs" />
+    <Compile Include="REST_API\UsingThothJson.fs" />
+    <Compile Include="REST_API\UsingSystemTextJson.fs" />
+    <Compile Include="REST_API\UsingNewtonsoftJson.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
 
