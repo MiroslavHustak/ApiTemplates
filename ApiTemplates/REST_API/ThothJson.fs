@@ -177,7 +177,7 @@ module ThothJson =
                              |> function
                                  | Ok value ->
                                              value
-                                 | Error err  ->                                         
+                                 | Error _  ->                                         
                                              PyramidOfDoom
                                                  {
                                                      let! value = usersTable.Rows |> Option.ofObj, { Id = -1; Name = String.Empty; Email = String.Empty }
@@ -188,7 +188,7 @@ module ThothJson =
                                                          { 
                                                              Id = Convert.ToInt32 row.["Id"] //throws exception if conversion fails 
                                                              Name = Convert.ToString row.["Name"]   //Convert.ToString -> value or string empty // |> Option.ofNullEmpty
-                                                             Email = err//Convert.ToString row.["Email"] //Convert.ToString -> value or string empty // |> Option.ofNullEmptyy
+                                                             Email = Convert.ToString row.["Email"] //Convert.ToString -> value or string empty // |> Option.ofNullEmptyy
                                                          }
                                                  }
     

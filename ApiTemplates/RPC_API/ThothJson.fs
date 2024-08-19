@@ -50,7 +50,7 @@ module RpcApi =
                          let b = payload.b 
                          
                          { 
-                             result = RpcFunctions.add a b 
+                             Result = RpcFunctions.add a b 
                          }
 
                      let responseJson = Encode.toString 2 (encoder response) //2 = the number of spaces used for indentation in the JSON structure                   

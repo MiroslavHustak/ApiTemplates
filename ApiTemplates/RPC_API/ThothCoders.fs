@@ -21,7 +21,7 @@ type Parameters =
 
 type Results =
     {
-        result : int
+        Result : int
     }
 
 module ThothCoders =   
@@ -29,7 +29,7 @@ module ThothCoders =
     let internal encoder (result : Results) =
         Encode.object
             [
-                "result", Encode.int result.result
+                "Result", Encode.int result.Result
             ]
 
     let internal decoder : Decoder<Parameters> =

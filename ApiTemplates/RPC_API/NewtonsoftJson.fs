@@ -29,7 +29,7 @@ module RpcApi =
         
     type Results =
         {
-            result : int
+            Result : int
         }
 
     let private rpcHandler : HttpHandler =   //GIRAFFE
@@ -48,7 +48,7 @@ module RpcApi =
                          let b = payload.b 
                          
                          { 
-                             result = RpcFunctions.add a b 
+                             Result = RpcFunctions.add a b 
                          }
                 
                      let responseText = JsonConvert.SerializeObject(response)
