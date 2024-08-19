@@ -17,8 +17,7 @@ open Thoth.Json.Net
 
 module RpcFunctions =  
      
-    let add (a : int) (b : int) : int =
-        a + b
+    let add a b = (+) a b    
 
 module RpcApi =
 

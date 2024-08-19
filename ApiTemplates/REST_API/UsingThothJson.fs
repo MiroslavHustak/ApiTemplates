@@ -79,8 +79,8 @@ module ThothJson =
                      let payload = //body serialised by FsHttp
                         Decode.fromString decoderPost body  
                         |> function
-                            | Ok value -> value
-                            | Error err  -> { Name = err } //To replace with default values in production   
+                            | Ok value  -> value
+                            | Error err -> { Name = err } //String.Empty //To be replaced with default values in production   
 
                      (*
                          // If no response content is needed, set the status code to 204
@@ -115,7 +115,7 @@ module ThothJson =
                         Decode.fromString decoderPost body  
                         |> function
                             | Ok value -> value
-                            | Error err  -> { Name = String.Empty } //To replace with default values in production
+                            | Error _  -> { Name = String.Empty } //To be replaced with default values in production  
 
                     (*
                         // If no response content is needed, set the status code to 204
