@@ -28,6 +28,20 @@ module ThothJson =
 
     open Helpers
     open ThothCoders
+
+    let private apiKey = "your-secure-api-key"  // Replace with your actual API key logic
+
+    let private validateApiKey (next: HttpFunc) (ctx: HttpContext) =
+                 
+        match ctx.Request.Headers.TryGetValue("X-API-KEY") with
+        | true, key 
+            when string key = apiKey 
+                -> 
+                 next ctx  
+        | _     ->
+                 ctx.Response.StatusCode <- 401
+                 ctx.Response.WriteAsync("Unauthorized: Invalid API Key") |> ignore
+                 System.Threading.Tasks.Task.FromResult<HttpContext option>(None) // API key is missing or invalid
     
     // ************** GET *******************
            
@@ -259,13 +273,14 @@ module ThothJson =
     let private apiRouter = //SATURN
 
         router
-            {
-                get "/" getHandler
+            { 
+                pipe_through validateApiKey //...for every request
+                get "/" getHandler   
                 get "/api/greetings/greet" getHandlerAsync
                 //post "/" postHandlerAsync
                 //post "/" postHandlerTask
                 post "/api/greetings/greet" postHandlerAsync
-                put "/user" putHandler
+                put "/user" putHandler                 
             }
 
     // Application setup
