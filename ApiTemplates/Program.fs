@@ -14,8 +14,8 @@ open RestApiSystemTextJson.RestApiTextJson
 module API = 
 
     //runApiTextJson ()
-    //runApiNewtonsoftJson ()
-    runApiThothJson ()
+    runApiNewtonsoftJson ()
+    //runApiThothJson ()
 
     //runRpcHandlerTextJson ()
     //runRpcHandlerNewtonsoftJson ()
