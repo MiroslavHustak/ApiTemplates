@@ -18,6 +18,8 @@ module RestApiTextJson =
     open System.Text.Json
     open Microsoft.AspNetCore.Http
 
+    open Helpers
+
     // ************** GET *******************
 
     // Response type for GET request
@@ -45,6 +47,34 @@ module RestApiTextJson =
              
              ctx.Response.ContentType <- "application/json"
              text responseJson next ctx  //GIRAFFE
+
+    // Handler for GET request with parameter sent via URL  
+    //****************************************************
+    let private getHandlerAsync : HttpHandler = 
+
+        fun (next : HttpFunc) (ctx : HttpContext) -> 
+            async
+                {
+                    // Extract the "name" query parameter from the URL
+                    let name = 
+                        string ctx.Request.Query.["name"] |> Option.ofNullEmptySpace
+                        |> function
+                            | Some value -> value
+                            | None       -> "Guest"                    
+
+                    let response = 
+                        {
+                            Message = sprintf "Hello, %s!" name
+                            Timestamp = System.DateTime.UtcNow.ToString("o") // ISO 8601 format
+                        }
+
+                    let responseJson = JsonSerializer.Serialize(response)
+                    ctx.Response.ContentType <- "application/json"
+
+                    // Return the response
+                    return! text responseJson next ctx |> Async.AwaitTask
+                }
+            |> Async.StartImmediateAsTask
     
     // ************** POST *******************
 
@@ -204,7 +234,9 @@ module RestApiTextJson =
         router
             {
                 get "/" getHandler
-                //post "/" postHandler
+                get "/api/greetings/greet" getHandlerAsync
+                //post "/" postHandlerAsync
+                //post "/" postHandlerTask
                 post "/api/greetings/greet" postHandler
                 put "/user" putHandler
             }

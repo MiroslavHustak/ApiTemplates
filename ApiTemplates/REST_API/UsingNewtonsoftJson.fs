@@ -1,7 +1,5 @@
 ﻿namespace RestApiNewtonsoftJson
 
-open System
-
 //Templates -> try-with blocks and Option/Result to be added when used in production
 
 //REST API created with SATURN and GIRAFFE
@@ -9,47 +7,7 @@ open System
 //Client Library -> FsHttp 
 //(De)Serialization -> Newtonsoft.Json
 
-[<RequireQualifiedAccess>]
-module Option =
 
-    [<Struct>]
-    type internal MyBuilder = MyBuilder with    
-         member _.Bind(condition, nextFunc) =
-             match fst condition with
-             | false -> snd condition
-             | true  -> nextFunc()  
-         member _.Return x = x
-         member _.Using x = x
-
-    let internal pyramidOfHell = MyBuilder
-
-    let internal ofNull (value : 'nullableValue) =
-
-        match System.Object.ReferenceEquals(value, null) with 
-        | true  -> None
-        | false -> Some value        
-                             
-    let internal ofNullEmpty (value : 'nullableValue) = //NullOrEmpty
-
-        pyramidOfHell
-            {
-                let!_ = not <| System.Object.ReferenceEquals(value, null), None 
-                let value = string value 
-                let! _ = not <| String.IsNullOrEmpty(value), None 
-
-                return Some value
-            }
-
-    let internal ofNullEmptySpace (value : 'nullableValue) = //NullOrEmpty, NullOrWhiteSpace
-        
-        pyramidOfHell
-            {
-                let!_ = not <| System.Object.ReferenceEquals(value, null), None 
-                let value = string value 
-                let! _ = not <| (String.IsNullOrEmpty(value) || String.IsNullOrWhiteSpace(value)), None
-        
-                return Some value
-            }
 
 module NewtonsoftJson =
 
@@ -61,6 +19,8 @@ module NewtonsoftJson =
     open Giraffe
     open Newtonsoft.Json  
     open Microsoft.AspNetCore.Http    
+
+    open Helpers
        
     
     // ************** GET *******************
@@ -90,9 +50,9 @@ module NewtonsoftJson =
 
              ctx.Response.ContentType <- "application/json"
              text responseJson next ctx   
-             
-    //****************************************
-
+           
+    // Handler for GET request with parameter sent via URL  
+    //****************************************************
     let private getHandlerAsync : HttpHandler = 
 
         fun (next : HttpFunc) (ctx : HttpContext) -> 
@@ -111,11 +71,11 @@ module NewtonsoftJson =
                             Timestamp = System.DateTime.UtcNow.ToString("o") // ISO 8601 format
                         }
 
-                    let responseText = JsonConvert.SerializeObject(response)
+                    let responseJson = JsonConvert.SerializeObject(response)
                     ctx.Response.ContentType <- "application/json"
 
                     // Return the response
-                    return! text responseText next ctx |> Async.AwaitTask
+                    return! text responseJson next ctx |> Async.AwaitTask
                 }
             |> Async.StartImmediateAsTask
    

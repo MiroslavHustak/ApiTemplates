@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="Helpers.fs" />
     <Compile Include="RPC_API\ThothCoders.fs" />
     <Compile Include="RPC_API\UsingThothJson.fs" />
     <Compile Include="RPC_API\UsingSystemTextJson.fs" />

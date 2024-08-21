@@ -15,21 +15,6 @@ open Thoth.Json.Net
 //Client Library -> FsHttp 
 //(De)Serialization -> Thoth.Json
 
-[<Struct>]
-type internal PyramidOfDoom = PyramidOfDoom with    
-    member _.Bind((optionExpr, err), nextFunc) =
-        match optionExpr with
-        | Some value -> nextFunc value 
-        | _          -> err  
-    member _.Return x : 'a = x   
-    member _.ReturnFrom x : 'a = x 
-    member _.TryFinally(body, compensation) =
-        try body()
-        finally compensation()
-    member _.Zero () = ()
-    member _.Using(resource, binder) =
-        use r = resource
-        binder r
 
 module ThothJson =
 
@@ -41,6 +26,7 @@ module ThothJson =
     open Giraffe
     open Microsoft.AspNetCore.Http    
 
+    open Helpers
     open ThothCoders
     
     // ************** GET *******************
@@ -60,6 +46,34 @@ module ThothJson =
                         
              ctx.Response.ContentType <- "application/json"
              text responseJson next ctx    
+
+    // Handler for GET request with parameter sent via URL  
+    //****************************************************
+    let private getHandlerAsync : HttpHandler = 
+
+        fun (next : HttpFunc) (ctx : HttpContext) -> 
+            async
+                {
+                    // Extract the "name" query parameter from the URL
+                    let name = 
+                        string ctx.Request.Query.["name"] |> Option.ofNullEmptySpace
+                        |> function
+                            | Some value -> value
+                            | None       -> "Guest"                    
+
+                    let response = 
+                        {
+                            Message = sprintf "Hello, %s!" name
+                            Timestamp = System.DateTime.UtcNow.ToString("o") // ISO 8601 format
+                        }
+
+                    let responseJson = Encode.toString 2 (encoderGet response) 
+                    ctx.Response.ContentType <- "application/json"
+
+                    // Return the response
+                    return! text responseJson next ctx |> Async.AwaitTask
+                }
+            |> Async.StartImmediateAsTask
     
     // ************** POST *******************    
 
@@ -247,6 +261,7 @@ module ThothJson =
         router
             {
                 get "/" getHandler
+                get "/api/greetings/greet" getHandlerAsync
                 //post "/" postHandlerAsync
                 //post "/" postHandlerTask
                 post "/api/greetings/greet" postHandlerAsync
