@@ -7,48 +7,7 @@
 //Client Library -> FsHttp 
 //(De)Serialization -> Newtonsoft.Json
 
-(*
-HTTP Methods: REST APIs use standard HTTP methods (GET, POST, PUT, DELETE, etc.) to interact with resources:
-
-GET to retrieve data.
-POST to create new resources.
-PUT to update existing resources.
-DELETE to remove resources.
-*)
-
-(*    
-Run Your F# API:
-    
-Execute the code to start the web server. It will be bound to 0.0.0.0:8080, making it accessible locally and over the network if your firewall settings allow it.
-Testing:    
-Local Testing: Open a web browser or an API client and navigate to http://localhost:8080 to test your API endpoints.
-Network Testing: If testing from another device on the same network, use the IP address of the machine running the API, like http://192.168.1.100:8080.
-*)
-
-(*
-Web API Configuration: Keep http://0.0.0.0:8080 in RestApi3.runApi() so the server listens on all network interfaces.
-Client Requests: Use http://localhost:8080 or http://127.0.0.1:8080 in your client application to make requests to the server.
-*)
-
 module NewtonsoftJson =
-
-    (*
-    GET Endpoint:
-    
-    URL: /
-    Method: GET
-    Handler: getHandler
-    Description: This endpoint responds to HTTP GET requests by returning a JSON object with a greeting message and a timestamp.
-
-    *****************************************************************************************************
-
-    POST Endpoint:
-
-    URL: /
-    Method: POST
-    Handler: postHandler
-    Description: This endpoint responds to HTTP POST requests by accepting a JSON payload with a name field, deserializing it, and returning a greeting message with the provided name.
-    *)
 
     open System
     open System.IO
@@ -275,8 +234,9 @@ module NewtonsoftJson =
         router
             {
                 get "/" getHandler
-                post "/" postHandlerAsync
+                //post "/" postHandlerAsync
                 //post "/" postHandlerTask
+                post "/api/greetings/greet" postHandlerAsync
                 put "/user" putHandler
             }
 

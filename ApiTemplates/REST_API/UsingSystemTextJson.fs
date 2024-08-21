@@ -204,7 +204,8 @@ module RestApiTextJson =
         router
             {
                 get "/" getHandler
-                post "/" postHandler
+                //post "/" postHandler
+                post "/api/greetings/greet" postHandler
                 put "/user" putHandler
             }
 
