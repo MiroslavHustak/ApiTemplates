@@ -5,7 +5,6 @@
 open Thoth.Json
 #else
 open Thoth.Json.Net
-
 #endif
 
 //Templates -> try-with blocks and Option/Result to be added when used in production

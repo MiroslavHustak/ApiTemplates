@@ -5,7 +5,6 @@
 open Thoth.Json
 #else
 open Thoth.Json.Net
-
 #endif
 
 //Templates -> try-with blocks and Option/Result to be added when used in production
@@ -14,7 +13,6 @@ open Thoth.Json.Net
 //Data format -> JSON
 //Client Library -> FsHttp 
 //(De)Serialization -> Thoth.Json
-
 
 module ThothJson =
 
@@ -29,9 +27,9 @@ module ThothJson =
     open Helpers
     open ThothCoders
 
-    let private apiKey = "your-secure-api-key"  // Replace with your actual API key logic
+    let private apiKey = "my-api-key"  
 
-    let private validateApiKey (next: HttpFunc) (ctx: HttpContext) =
+    let private validateApiKey (next: HttpFunc) (ctx: HttpContext) =  //GIRAFFE
                  
         match ctx.Request.Headers.TryGetValue("X-API-KEY") with
         | true, key 
@@ -46,24 +44,35 @@ module ThothJson =
     // ************** GET *******************
            
     // curl -X GET http://localhost:8080/    
-    let private getHandler : HttpHandler =
+    let private getHandler : HttpHandler =  //GIRAFFE        
 
-        fun (next : HttpFunc) (ctx : HttpContext)
-            ->
-             let response = 
-                 {
-                     Message = "Hello, World!"
-                     Timestamp = System.DateTime.UtcNow.ToString("o") // ISO 8601 format
-                 }
+        fun (next : HttpFunc) (ctx : HttpContext) -> 
+            async
+                {
+                    // Extract the "name" query parameter from the URL
+                    let name = 
+                        string ctx.Request.Query.["name"] |> Option.ofNullEmptySpace
+                        |> function
+                            | Some value -> value
+                            | None       -> "Guest"                    
 
-             let responseJson = Encode.toString 2 (encoderGet response) //2 = the number of spaces used for indentation in the JSON structure  
-                        
-             ctx.Response.ContentType <- "application/json"
-             text responseJson next ctx    
+                    let response = 
+                        {
+                            Message = "Hello, World!"
+                            Timestamp = System.DateTime.UtcNow.ToString("o") // ISO 8601 format
+                        }
+
+                    let responseJson = Encode.toString 2 (encoderGet response) 
+                    ctx.Response.ContentType <- "application/json"
+
+                    // Return the response
+                    return! text responseJson next ctx |> Async.AwaitTask  //GIRAFFE
+                }
+            |> Async.StartImmediateAsTask 
 
     // Handler for GET request with parameter sent via URL  
     //****************************************************
-    let private getHandlerAsync : HttpHandler = 
+    let private getHandlerWithParam : HttpHandler = //GIRAFFE
 
         fun (next : HttpFunc) (ctx : HttpContext) -> 
             async
@@ -85,7 +94,7 @@ module ThothJson =
                     ctx.Response.ContentType <- "application/json"
 
                     // Return the response
-                    return! text responseJson next ctx |> Async.AwaitTask
+                    return! text responseJson next ctx |> Async.AwaitTask  //GIRAFFE
                 }
             |> Async.StartImmediateAsTask
     
@@ -276,7 +285,7 @@ module ThothJson =
             { 
                 pipe_through validateApiKey //...for every request
                 get "/" getHandler   
-                get "/api/greetings/greet" getHandlerAsync
+                get "/api/greetings/greet" getHandlerWithParam
                 //post "/" postHandlerAsync
                 //post "/" postHandlerTask
                 post "/api/greetings/greet" postHandlerAsync

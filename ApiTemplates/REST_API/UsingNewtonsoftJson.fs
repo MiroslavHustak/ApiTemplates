@@ -7,8 +7,6 @@
 //Client Library -> FsHttp 
 //(De)Serialization -> Newtonsoft.Json
 
-
-
 module NewtonsoftJson =
 
     open System
@@ -20,8 +18,7 @@ module NewtonsoftJson =
     open Newtonsoft.Json  
     open Microsoft.AspNetCore.Http    
 
-    open Helpers
-       
+    open Helpers       
     
     // ************** GET *******************
         
@@ -34,26 +31,35 @@ module NewtonsoftJson =
 
     // Handler for GET request
     // curl -X GET http://localhost:8080/    
-    let private getHandler : HttpHandler =
+    let private getHandler : HttpHandler =      
+             
+        fun (next : HttpFunc) (ctx : HttpContext) ->   //GIRAFFE
+            async
+                {
+                    // Extract the "name" query parameter from the URL
+                    let name = 
+                        string ctx.Request.Query.["name"] |> Option.ofNullEmptySpace
+                        |> function
+                            | Some value -> value
+                            | None       -> "Guest"                    
 
-        fun (next : HttpFunc) (ctx : HttpContext)
-            ->
-             // Create a response object
-             let response = 
-                 {
-                     Message = "Hello, World!"
-                     Timestamp = System.DateTime.UtcNow.ToString("o") // ISO 8601 format
-                 }
-            
-             // Serialize the response object to JSON
-             let responseJson = JsonConvert.SerializeObject(response)
+                    let response = 
+                        {
+                            Message = "Hello, World!"
+                            Timestamp = System.DateTime.UtcNow.ToString("o") // ISO 8601 format
+                        }
 
-             ctx.Response.ContentType <- "application/json"
-             text responseJson next ctx   
+                    let responseJson = JsonConvert.SerializeObject(response)
+                    ctx.Response.ContentType <- "application/json"
+
+                    // Return the response
+                    return! text responseJson next ctx |> Async.AwaitTask  //GIRAFFE
+                }
+            |> Async.StartImmediateAsTask
            
     // Handler for GET request with parameter sent via URL  
     //****************************************************
-    let private getHandlerAsync : HttpHandler = 
+    let private getHandlerParam : HttpHandler = 
 
         fun (next : HttpFunc) (ctx : HttpContext) -> 
             async
@@ -268,7 +274,7 @@ module NewtonsoftJson =
         router
             {
                 get "/" getHandler
-                get "/api/greetings/greet" getHandlerAsync
+                get "/api/greetings/greet" getHandlerParam
                 //post "/" postHandlerAsync
                 //post "/" postHandlerTask
                 post "/api/greetings/greet" postHandlerAsync

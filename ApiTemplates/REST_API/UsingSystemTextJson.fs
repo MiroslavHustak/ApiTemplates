@@ -31,26 +31,35 @@ module RestApiTextJson =
     
     // Handler for GET request
     // curl -X GET http://localhost:8080/    
-    let private getHandler : HttpHandler = //GIRAFFE
+    let private getHandler : HttpHandler = //GIRAFFE        
 
-        fun (next : HttpFunc) (ctx : HttpContext) //GIRAFFE
-            ->
-             // Create a response object
-             let response = 
-                 {
-                     Message = "Hello, World!"
-                     Timestamp = System.DateTime.UtcNow.ToString("o") // ISO 8601 format
-                 }
-            
-             // Serialize the response object to JSON
-             let responseJson = JsonSerializer.Serialize(response)
-             
-             ctx.Response.ContentType <- "application/json"
-             text responseJson next ctx  //GIRAFFE
+        fun (next : HttpFunc) (ctx : HttpContext) -> //GIRAFFE
+            async
+                {
+                    // Extract the "name" query parameter from the URL
+                    let name = 
+                        string ctx.Request.Query.["name"] |> Option.ofNullEmptySpace
+                        |> function
+                            | Some value -> value
+                            | None       -> "Guest"                    
+
+                    let response = 
+                        {
+                            Message = "Hello, World!"
+                            Timestamp = System.DateTime.UtcNow.ToString("o") // ISO 8601 format
+                        }
+
+                    let responseJson = JsonSerializer.Serialize(response)
+                    ctx.Response.ContentType <- "application/json"
+
+                    // Return the response
+                    return! text responseJson next ctx |> Async.AwaitTask   //GIRAFFE
+                }
+            |> Async.StartImmediateAsTask  
 
     // Handler for GET request with parameter sent via URL  
     //****************************************************
-    let private getHandlerAsync : HttpHandler = 
+    let private getHandlerWithParam : HttpHandler = 
 
         fun (next : HttpFunc) (ctx : HttpContext) -> 
             async
@@ -234,7 +243,7 @@ module RestApiTextJson =
         router
             {
                 get "/" getHandler
-                get "/api/greetings/greet" getHandlerAsync
+                get "/api/greetings/greet" getHandlerWithParam
                 //post "/" postHandlerAsync
                 //post "/" postHandlerTask
                 post "/api/greetings/greet" postHandler
