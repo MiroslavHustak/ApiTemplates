@@ -19,7 +19,6 @@ module API =
 
     //runRpcHandlerTextJson ()
     //runRpcHandlerNewtonsoftJson ()
-    //runRpcHandlerThothJson ()
-    
+    //runRpcHandlerThothJson ()    
 
     Console.ReadKey() |> ignore

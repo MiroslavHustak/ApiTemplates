@@ -38,10 +38,10 @@ module RpcApi =
                      let! body = reader.ReadToEndAsync()
                                                              
                      let payload = 
-                        Decode.fromString decoder body  
-                        |> function
-                            | Ok value -> value
-                            | Error _  -> { a = 0; b = 0 } //To replace with default values in production                                         
+                         Decode.fromString decoder body  
+                         |> function
+                             | Ok value -> value
+                             | Error _  -> { a = 0; b = 0 } //To replace with default values in production                                         
                                 
                      let response =                         
                          let a = payload.a
