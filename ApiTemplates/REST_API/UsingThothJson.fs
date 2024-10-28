@@ -49,13 +49,6 @@ module ThothJson =
         fun (next : HttpFunc) (ctx : HttpContext) -> 
             async
                 {
-                    // Extract the "name" query parameter from the URL
-                    let name = 
-                        string ctx.Request.Query.["name"] |> Option.ofNullEmptySpace
-                        |> function
-                            | Some value -> value
-                            | None       -> "Guest"                    
-
                     let response = 
                         {
                             Message = "Hello, World!"
