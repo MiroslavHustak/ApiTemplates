@@ -25,8 +25,8 @@ module RestApiTextJson =
     // Response type for GET request
     type HelloResponse = 
         {
-            Message: string
-            Timestamp: string
+            Message : string
+            Timestamp : string
         }
     
     // Handler for GET request
@@ -90,13 +90,13 @@ module RestApiTextJson =
     // Payload type 
     type HelloPayload =
         {
-            Name: string
+            Name : string
         }
 
     // Response type for POST request 
     type HelloResponsePost = 
         {
-            Message: string
+            Message : string
         }  
 
     // Handler for POST request
@@ -139,16 +139,16 @@ module RestApiTextJson =
     // Payload type
     type UserPayload =
         {
-            Id: int
-            Name: string
-            Email: string
+            Id : int
+            Name : string
+            Email : string
         }
     
     // Response type
     type UserResponsePut = 
         {
-            Message: string
-            UpdatedDataTableInfo: UserPayload
+            Message : string
+            UpdatedDataTableInfo : UserPayload
         }
     
     // DataTable to store user data

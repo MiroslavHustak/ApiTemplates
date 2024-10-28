@@ -23,12 +23,12 @@ type HelloResponseGet =
 
 type HelloPayload =
     {
-        Name: string
+        Name : string
     }
 
 type HelloResponsePost = 
     {
-        Message: string
+        Message : string
     }  
 
 //**************** PUT ********************
@@ -42,8 +42,8 @@ type UserPayload =
 
 type UserResponsePut = 
     {
-        Message: string
-        UpdatedDataTableInfo: UserPayload
+        Message : string
+        UpdatedDataTableInfo : UserPayload
     }
 
 module ThothCoders =   

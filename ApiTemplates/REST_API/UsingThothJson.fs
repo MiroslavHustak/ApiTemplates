@@ -29,7 +29,7 @@ module ThothJson =
 
     let private apiKey = "my-api-key"  
 
-    let private validateApiKey (next: HttpFunc) (ctx: HttpContext) =  //GIRAFFE
+    let private validateApiKey (next : HttpFunc) (ctx: HttpContext) =  //GIRAFFE
                  
         match ctx.Request.Headers.TryGetValue("X-API-KEY") with
         | true, key 
